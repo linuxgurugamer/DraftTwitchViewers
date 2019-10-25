@@ -1,3 +1,7 @@
+2.7.0
+	Added installchecker
+	Rebuild for 1.8
+
 2.6.3
 	Thanks to github user @Nifty255 for this:
 		Use Twitch Helix instead of deprecated V3
