@@ -630,10 +630,9 @@ namespace DraftTwitchViewers
                                     string userDrafted = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
 
                                     // Creates a new Unity web request (WWW) using the user chosen.
-                                    Hashtable headers = new Hashtable();
-                                    headers.Add("Client-ID", clientID);
-                                    WWW getUser = new WWW("https://api.twitch.tv/helix/users?login=" + userDrafted, null, headers);
-
+                                    Dictionary<string, string> headersDict = new Dictionary<string, string>();
+                                    headersDict.Add("Client-ID", clientID);
+                                    WWW getUser =  new WWW("https://api.twitch.tv/helix/users?login=" + userDrafted, null, headersDict);
                                     // Waits for the web request to finish.
                                     yield return getUser;
 
