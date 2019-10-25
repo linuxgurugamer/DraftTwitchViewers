@@ -1,3 +1,8 @@
+2.6.3
+	Thanks to github user @Nifty255 for this:
+		Use Twitch Helix instead of deprecated V3
+	Changed headers in ScenarioDraftManager from Hashtable to Dictionary
+
 2.6.2
 	Updated for 1.7.2
 	Updated AssemblyVersion.tt for location independent builds
