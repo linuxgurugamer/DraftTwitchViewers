@@ -1,3 +1,6 @@
+2.7.0.1
+	Updated MiniAVC.dll to 1.4.0.2 to fix a nasty CTD
+
 2.7.0
 	Added installchecker
 	Rebuild for 1.8
