@@ -78,7 +78,7 @@ namespace DraftTwitchViewers
         /// <summary>
         /// The client ID string used to access the Twitch API.
         /// </summary>
-        private const string clientID = "2gejhahzzkdfssseh8t64x6zkqmdvb0";
+        private const string clientID = "02czsg7qp3bh79dpgrpkgb1irngxma";
 
         #endregion
 
@@ -430,6 +430,16 @@ namespace DraftTwitchViewers
         {
             return realUsername + (Instance.addKerman ? " Kerman" : "");
         }
+        static string UppercaseFirst(string s)
+        {
+            // Check for empty string.
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            // Return char and concat substring.
+            return char.ToUpper(s[0]) + s.Substring(1);
+        }
 
         /// <summary>
         /// Drafts a Kerbal, invoking the suplied success Action if the draft succeeds, or the failure Action if the draft fails.
@@ -456,7 +466,7 @@ namespace DraftTwitchViewers
                 Log.Info("ScenarioDraftManager.DraftKerbal");
                 // Creates a new Unity web request (WWW) using the provided channel.
                 WWW getList = new WWW("http://tmi.twitch.tv/group/user/" + Instance.channel + "/chatters?client_id=" + clientID);
-
+                Log.Info("WWW request 1: " + "http://tmi.twitch.tv/group/user/" + Instance.channel + "/chatters?client_id=" + clientID);
                 // Waits for the web request to finish.
                 yield return getList;
 
@@ -587,6 +597,7 @@ namespace DraftTwitchViewers
                                 else
                                 {
                                     // Invoke failure, stating web error.
+                                    Log.Error("Web error 2: " + getUser.error);
                                     failure.Invoke("Web error: " + getUser.error);
                                 }
                             }
@@ -629,10 +640,17 @@ namespace DraftTwitchViewers
                                     // Gets a random user from the list.
                                     string userDrafted = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
 
+                                    oddUsername = userDrafted;
+#if true
+                                    realUsername = UppercaseFirst(userDrafted);
+                                    Log.Info("realUsername: " + realUsername);
+                                    foundProperKerbal = true;
+#else
                                     // Creates a new Unity web request (WWW) using the user chosen.
                                     Dictionary<string, string> headersDict = new Dictionary<string, string>();
                                     headersDict.Add("Client-ID", clientID);
                                     WWW getUser =  new WWW("https://api.twitch.tv/helix/users?login=" + userDrafted, null, headersDict);
+                                    Log.Info("WWW request 3: " + "https://api.twitch.tv/helix/users?login=" + userDrafted);
                                     // Waits for the web request to finish.
                                     yield return getUser;
 
@@ -651,8 +669,10 @@ namespace DraftTwitchViewers
                                     else
                                     {
                                         // Invoke failure, stating web error.
+                                        Log.Error("Web error 3: " + getUser.error);
                                         failure.Invoke("Web error: " + getUser.error);
                                     }
+#endif
                                 }
                             }
                             while (!foundProperKerbal && !failedToFindOne && searchAttempts < 25);
@@ -695,14 +715,15 @@ namespace DraftTwitchViewers
                 else
                 {
                     // Invoke failure, stating web error.
+                    Log.Error("Web error 1: " + getList.error);
                     failure.Invoke("Web error: " + getList.error);
                 }
             }
         }
 
-        #endregion
+#endregion
 
-        #region Saving
+#region Saving
 
         /// <summary>
         /// Saves the global settings used in this class.
@@ -864,9 +885,9 @@ namespace DraftTwitchViewers
             Instance.AlreadyDrafted.Add(newName);
         }
 
-        #endregion
+#endregion
 
-        #region Misc Functions
+#region Misc Functions
 
         /// <summary>
         /// Converts a twitch chatter request into a list of users.
@@ -895,9 +916,9 @@ namespace DraftTwitchViewers
             return toRet;
         }
 
-        #endregion
+#endregion
 
-        #region Regexes
+#region Regexes
 
         /// <summary>
         /// A list of regex strings.
@@ -994,6 +1015,6 @@ namespace DraftTwitchViewers
             regexes = rList.ToArray();
         }
 
-        #endregion
+#endregion
     }
 }
