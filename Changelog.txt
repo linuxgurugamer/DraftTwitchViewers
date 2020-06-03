@@ -1,5 +1,9 @@
 ChangeLog
 
+2.7.0.4
+	Fixed viewer drawing
+	Fixed tourists not getting names from chat
+
 2.7.0.3
 	Updated app registration, now registered with Twitch as DraftTViewers
 	Disabled the call to Twitch to get the displayname, which is only how the user wanted the name to be capitalized.  In order to get that

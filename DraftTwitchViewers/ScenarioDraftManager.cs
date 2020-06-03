@@ -514,7 +514,7 @@ namespace DraftTwitchViewers
                         for (int i = usersInChat.Count - 1; i >= 0; i--)
                         {
                             var s = RealUserName(usersInChat[i]).ToLower();
-                            
+
                             for (int i1 = 0; i1 < HighLogic.CurrentGame.CrewRoster.Count; i1++)
                             {
                                 if (HighLogic.CurrentGame.CrewRoster[i1].name.ToLower() == s)
@@ -548,36 +548,48 @@ namespace DraftTwitchViewers
                         {
                             usersInChat.Remove(r);
                         }
-
-                        // If for drawing, perform drawing code.
-                        if (forDrawing)
+                    }
+                    // If for drawing, perform drawing code.
+                    if (forDrawing)
+                    {
+                        // If the user list is empty,
+                        if (usersInChat.Count == 0)
                         {
-                            // If the user list is empty,
-                            if (usersInChat.Count == 0)
+                            // Invoke the failure Action, allowing the caller to handle this error.
+                            failure.Invoke("Can't draw! No more valid users.\nEmpty the drafted user list to draft unused viewers.");
+                        }
+                        else
+                        {
+
+                            // Gets a random user from the list.
+                            bool foundProperKerbal = false;
+                            bool failedToFindOne = false;
+                            int searchAttempts = 0;
+
+                            // Set up Kerbal data variables.
+                            string oddUsername = null;
+                            string realUsername = null;
+                            string realJob = job;
+
+                            do
                             {
-                                // Invoke the failure Action, allowing the caller to handle this error.
-                                failure.Invoke("Can't draw! No more valid users.\nEmpty the drafted user list to draft unused viewers.");
-                            }
-                            else
-                            {
-                                // Gets a random user from the list.
-                                string userDrawn = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
+                                // Incremet attempts.
+                                searchAttempts++;
 
-                                // Creates a new Unity web request (WWW) using the user chosen.
-                                Hashtable headers = new Hashtable();
-                                headers.Add("Client-ID", clientID);
-                                WWW getUser = new WWW("https://api.twitch.tv/helix/users?login=" + userDrawn, null, headers);
-
-                                // Waits for the web request to finish.
-                                yield return getUser;
-
-                                // Check for errors.
-                                if (string.IsNullOrEmpty(getUser.error))
+                                // If the user list is empty,
+                                if (usersInChat.Count == 0)
                                 {
-                                    // Parses the real username of the chosen user.
-                                    string realUsername = getUser.text.Substring(getUser.text.IndexOf("\"display_name\""));
-                                    realUsername = realUsername.Substring(realUsername.IndexOf(":") + 2);
-                                    realUsername = realUsername.Substring(0, realUsername.IndexOf(",") - 1);
+                                    // No viewers left.
+                                    failedToFindOne = true;
+                                }
+                                else
+                                {
+                                    string userDrawn = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
+                                    oddUsername = userDrawn;
+
+                                    realUsername = UppercaseFirst(userDrawn);
+                                    Log.Info("realUsername: " + realUsername);
+                                    foundProperKerbal = true;
 
                                     // If the save is not supressed,
                                     if (!suppressSave)
@@ -593,123 +605,89 @@ namespace DraftTwitchViewers
                                     // Invoke the success Action, allowing the caller to continue.
                                     success.Invoke(winner);
                                 }
-                                // If there is an error,
-                                else
-                                {
-                                    // Invoke failure, stating web error.
-                                    Log.Error("Web error 2: " + getUser.error);
-                                    failure.Invoke("Web error: " + getUser.error);
-                                }
-                            }
-                        }
-                        // Else, perform draft code.
-                        else
-                        {
-                            // Set up variables used to exit the search loop.
-                            bool foundProperKerbal = false;
-                            bool failedToFindOne = false;
-                            int searchAttempts = 0;
-
-                            // Set up Kerbal data variables.
-                            string oddUsername = null;
-                            string realUsername = null;
-                            string realJob = job;
-
-                            // Randomize the job if none was specified.
-                            if (realJob == "Any")
-                            {
-                                int randomJob = UnityEngine.Random.Range(0, 3);
-                                realJob = (randomJob == 0 ? "Pilot" : (randomJob == 1 ? "Engineer" : "Scientist"));
-                            }
-
-                            // Perform the search loop at least once, and repeat until success or failure.
-                            do
-                            {
-                                // Incremet attempts.
-                                searchAttempts++;
-
-                                // If the user list is empty,
-                                if (usersInChat.Count == 0)
-                                {
-                                    // No viewers left.
-                                    failedToFindOne = true;
-                                }
-                                // Otherwise, continue attempting to draft.
-                                else
-                                {
-                                    // Gets a random user from the list.
-                                    string userDrafted = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
-
-                                    oddUsername = userDrafted;
-#if true
-                                    realUsername = UppercaseFirst(userDrafted);
-                                    Log.Info("realUsername: " + realUsername);
-                                    foundProperKerbal = true;
-#else
-                                    // Creates a new Unity web request (WWW) using the user chosen.
-                                    Dictionary<string, string> headersDict = new Dictionary<string, string>();
-                                    headersDict.Add("Client-ID", clientID);
-                                    WWW getUser =  new WWW("https://api.twitch.tv/helix/users?login=" + userDrafted, null, headersDict);
-                                    Log.Info("WWW request 3: " + "https://api.twitch.tv/helix/users?login=" + userDrafted);
-                                    // Waits for the web request to finish.
-                                    yield return getUser;
-
-                                    // Check for errors.
-                                    if (string.IsNullOrEmpty(getUser.error))
-                                    {
-                                        // Parses the real username of the chosen user.
-                                        realUsername = getUser.text.Substring(getUser.text.IndexOf("\"display_name\""));
-                                        realUsername = realUsername.Substring(realUsername.IndexOf(":") + 2);
-                                        realUsername = realUsername.Substring(0, realUsername.IndexOf(",") - 1);
-
-                                        oddUsername = userDrafted;
-                                        foundProperKerbal = true;
-                                    }
-                                    // If there is an error,
-                                    else
-                                    {
-                                        // Invoke failure, stating web error.
-                                        Log.Error("Web error 3: " + getUser.error);
-                                        failure.Invoke("Web error: " + getUser.error);
-                                    }
-#endif
-                                }
                             }
                             while (!foundProperKerbal && !failedToFindOne && searchAttempts < 25);
-
-                            // If we found a Kerbal with the right job,
-                            if (foundProperKerbal)
-                            {
-                                // If the save is not supressed,
-                                if (!suppressSave)
-                                {
-                                    // Save the new user in the drawing file.
-                                    Instance.AlreadyDrafted.Add(oddUsername);
-                                }
-
-                                Dictionary<string, string> drafted = new Dictionary<string, string>();
-
-                                drafted.Add("name", RealUserName(realUsername));
-                                drafted.Add("job", realJob);
-
-                                Log.Info("Adding drafted user: " + realUsername);
-                                // Invoke the success Action, allowing the caller to continue.
-                                success.Invoke(drafted);
-                            }
-                            // Else, if we failed to find one,
-                            else if (failedToFindOne)
-                            {
-                                // Invoke the failure Action, allowing the caller to handle this error.
-                                failure.Invoke("Can't draft! No more valid users.");
-                            }
-                            // Else, if the search was attempted too many times,
-                            else if (searchAttempts >= 25)
-                            {
-                                // Invoke the failure Action, allowing the caller to handle this error.
-                                failure.Invoke("Can't draft! Too many attempts.");
-                            }
                         }
                     }
+                    // Else, perform draft code.
+                    else
+                    {
+                        // Set up variables used to exit the search loop.
+                        bool foundProperKerbal = false;
+                        bool failedToFindOne = false;
+                        int searchAttempts = 0;
+
+                        // Set up Kerbal data variables.
+                        string oddUsername = null;
+                        string realUsername = null;
+                        string realJob = job;
+
+                        // Randomize the job if none was specified.
+                        if (realJob == "Any")
+                        {
+                            int randomJob = UnityEngine.Random.Range(0, 3);
+                            realJob = (randomJob == 0 ? "Pilot" : (randomJob == 1 ? "Engineer" : "Scientist"));
+                        }
+
+                        // Perform the search loop at least once, and repeat until success or failure.
+                        do
+                        {
+                            // Incremet attempts.
+                            searchAttempts++;
+
+                            // If the user list is empty,
+                            if (usersInChat.Count == 0)
+                            {
+                                // No viewers left.
+                                failedToFindOne = true;
+                            }
+                            // Otherwise, continue attempting to draft.
+                            else
+                            {
+                                // Gets a random user from the list.
+                                string userDrafted = usersInChat[UnityEngine.Random.Range(0, usersInChat.Count)];
+
+                                oddUsername = userDrafted;
+                                realUsername = UppercaseFirst(userDrafted);
+                                Log.Info("realUsername: " + realUsername);
+                                foundProperKerbal = true;
+                            }
+                        }
+                        while (!foundProperKerbal && !failedToFindOne && searchAttempts < 25);
+
+                        // If we found a Kerbal with the right job,
+                        if (foundProperKerbal)
+                        {
+                            // If the save is not supressed,
+                            if (!suppressSave)
+                            {
+                                // Save the new user in the drawing file.
+                                Instance.AlreadyDrafted.Add(oddUsername);
+                            }
+
+                            Dictionary<string, string> drafted = new Dictionary<string, string>();
+
+                            drafted.Add("name", RealUserName(realUsername));
+                            drafted.Add("job", realJob);
+
+                            Log.Info("Adding drafted user: " + realUsername);
+                            // Invoke the success Action, allowing the caller to continue.
+                            success.Invoke(drafted);
+                        }
+                        // Else, if we failed to find one,
+                        else if (failedToFindOne)
+                        {
+                            // Invoke the failure Action, allowing the caller to handle this error.
+                            failure.Invoke("Can't draft! No more valid users.");
+                        }
+                        // Else, if the search was attempted too many times,
+                        else if (searchAttempts >= 25)
+                        {
+                            // Invoke the failure Action, allowing the caller to handle this error.
+                            failure.Invoke("Can't draft! Too many attempts.");
+                        }
+                    }
+
                 }
                 // If there is an error,
                 else
@@ -721,9 +699,9 @@ namespace DraftTwitchViewers
             }
         }
 
-#endregion
+        #endregion
 
-#region Saving
+        #region Saving
 
         /// <summary>
         /// Saves the global settings used in this class.
@@ -885,9 +863,9 @@ namespace DraftTwitchViewers
             Instance.AlreadyDrafted.Add(newName);
         }
 
-#endregion
+        #endregion
 
-#region Misc Functions
+        #region Misc Functions
 
         /// <summary>
         /// Converts a twitch chatter request into a list of users.
@@ -916,9 +894,9 @@ namespace DraftTwitchViewers
             return toRet;
         }
 
-#endregion
+        #endregion
 
-#region Regexes
+        #region Regexes
 
         /// <summary>
         /// A list of regex strings.
@@ -1015,6 +993,6 @@ namespace DraftTwitchViewers
             regexes = rList.ToArray();
         }
 
-#endregion
+        #endregion
     }
 }
