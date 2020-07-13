@@ -486,41 +486,52 @@ namespace DraftTwitchViewers
                         Log.Info("usersInChat: " + s);
                     }
                     // Remove any bots present.
-                    foreach (string bot in Instance.BotsToRemove)
+                    if (Instance.BotsToRemove != null)
                     {
-                        Log.Info("Removing bot: " + bot);
-                        usersInChat.Remove(bot);
+                        foreach (string bot in Instance.BotsToRemove)
+                        {
+                            Log.Info("Removing bot: " + bot);
+                            usersInChat.Remove(bot);
+                        }
                     }
-
                     // If it's for a drawing, remove drawn users. If it's for drafting, remove drafted users.
                     if (forDrawing)
                     {
                         // Remove any users who were already drafted.
-                        foreach (string drawn in Instance.DrawnUsers)
+                        if (Instance.DrawnUsers != null)
                         {
-                            usersInChat.Remove(drawn);
+                            foreach (string drawn in Instance.DrawnUsers)
+                            {
+                                usersInChat.Remove(drawn);
+                            }
                         }
                     }
                     else
                     {
                         // Remove any users who were already drafted.
-                        foreach (string drafted in Instance.AlreadyDrafted)
+                        if (Instance.AlreadyDrafted != null)
                         {
-                            Log.Info("Removing drafted: " + drafted);
-                            usersInChat.Remove(drafted);
+                            foreach (string drafted in Instance.AlreadyDrafted)
+                            {
+                                Log.Info("Removing drafted: " + drafted);
+                                usersInChat.Remove(drafted);
+                            }
                         }
 
                         // LGG: added check to be sure that the same user isn't a kerbal already
-                        for (int i = usersInChat.Count - 1; i >= 0; i--)
+                        if (HighLogic.CurrentGame != null)
                         {
-                            var s = RealUserName(usersInChat[i]).ToLower();
-
-                            for (int i1 = 0; i1 < HighLogic.CurrentGame.CrewRoster.Count; i1++)
+                            for (int i = usersInChat.Count - 1; i >= 0; i--)
                             {
-                                if (HighLogic.CurrentGame.CrewRoster[i1].name.ToLower() == s)
+                                var s = RealUserName(usersInChat[i]).ToLower();
+
+                                for (int i1 = 0; i1 < HighLogic.CurrentGame.CrewRoster.Count; i1++)
                                 {
-                                    usersInChat.Remove(usersInChat[i]);
-                                    break;
+                                    if (HighLogic.CurrentGame.CrewRoster[i1].name.ToLower() == s)
+                                    {
+                                        usersInChat.Remove(usersInChat[i]);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -529,16 +540,19 @@ namespace DraftTwitchViewers
                         List<string> toRemove = new List<string>();
 
                         // Iterate through the regexes.
-                        foreach (Regex r in Instance.regexes)
+                        if (Instance.regexes != null)
                         {
-                            // Iterate through each username per regex.
-                            foreach (string u in usersInChat)
+                            foreach (Regex r in Instance.regexes)
                             {
-                                // If the current regex matches the current username,
-                                if (r.IsMatch(u))
+                                // Iterate through each username per regex.
+                                foreach (string u in usersInChat)
                                 {
-                                    // Mark the name for removal by adding it to the removal list.
-                                    toRemove.Add(u);
+                                    // If the current regex matches the current username,
+                                    if (r.IsMatch(u))
+                                    {
+                                        // Mark the name for removal by adding it to the removal list.
+                                        toRemove.Add(u);
+                                    }
                                 }
                             }
                         }
