@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
+
 namespace DraftTwitchViewers
 {
     /// <summary>
@@ -473,6 +474,7 @@ namespace DraftTwitchViewers
                 // Check for errors.
                 if (string.IsNullOrEmpty(getList.error))
                 {
+                    Log.Info("getList.text: " + getList.text);
                     // Parse the result into a list of users, still lowercased.
                     List<string> usersInChat = new List<string>();
                     usersInChat.AddRange(Instance.ParseIntoNameArray(getList.text, "moderators"));
@@ -889,7 +891,8 @@ namespace DraftTwitchViewers
         /// <returns>A list of users.</returns>
         string[] ParseIntoNameArray(string toParse, string parsingFrom)
         {
-            string toSplit = toParse.Substring(toParse.IndexOf("\"" + parsingFrom + "\": ["));
+            //var s = toParse.IndexOf("\"" + parsingFrom + "\": [");
+            string toSplit = toParse.Substring(toParse.IndexOf("\"" + parsingFrom + "\":["));
             toSplit = toSplit.Substring(toSplit.IndexOf('[') + 1);
             toSplit = toSplit.Substring(0, toSplit.IndexOf(']'));
             if (toSplit == "")
@@ -904,18 +907,18 @@ namespace DraftTwitchViewers
             {
                 toRet[i] = toRet[i].Substring(1, toRet[i].Length - 2);
             }
-
             return toRet;
+
         }
 
-        #endregion
+            #endregion
 
-        #region Regexes
+            #region Regexes
 
-        /// <summary>
-        /// A list of regex strings.
-        /// </summary>
-        string[] regexStrings = new string[] {
+            /// <summary>
+            /// A list of regex strings.
+            /// </summary>
+            string[] regexStrings = new string[] {
 
             "(?<!c)(?:a|4)n(?:a|4)(?:l|i|1)",
             "(?:a|4)nu(?:s|5)",
@@ -1007,6 +1010,6 @@ namespace DraftTwitchViewers
             regexes = rList.ToArray();
         }
 
-        #endregion
+#endregion
     }
 }

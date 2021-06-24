@@ -1,5 +1,8 @@
 ChangeLog
 
+2.7.1
+	Fixed ad-hoc JSON code ParseIntoNameArray (Twitch removed a space from the JSON they were returning)
+
 2.7.0.5
 	Added some extra checks for null refs in DraftTwitchViewers
 
