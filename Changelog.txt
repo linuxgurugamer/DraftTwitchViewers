@@ -1,5 +1,8 @@
 ChangeLog
 
+2.7.1.1
+	Renamed DLL for better compatibility with CKAN
+
 2.7.1
 	Fixed ad-hoc JSON code ParseIntoNameArray (Twitch removed a space from the JSON they were returning)
 
